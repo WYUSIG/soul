@@ -26,7 +26,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author xiaoyu
  */
 @SpringBootApplication
-public class SoulTestHttpApplication {
+public class ShenyuTestHttpApplication {
 
     /**
      * main.
@@ -34,6 +34,6 @@ public class SoulTestHttpApplication {
      * @param args args
      */
     public static void main(final String[] args) {
-        SpringApplication.run(SoulTestHttpApplication.class, args);
+        SpringApplication.run(ShenyuTestHttpApplication.class, args);
     }
 }

@@ -41,7 +41,7 @@ import static org.springframework.web.reactive.function.server.ServerResponse.ok
  * @author xiaoyu
  */
 @Component
-public class SoulTestHttpRouter {
+public class ShenyuTestHttpRouter {
 
     private static final AtomicInteger ATOMIC_INTEGER = new AtomicInteger(1);
 
