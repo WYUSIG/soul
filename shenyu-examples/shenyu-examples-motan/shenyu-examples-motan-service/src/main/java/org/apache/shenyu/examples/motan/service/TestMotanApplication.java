@@ -30,11 +30,8 @@ import org.springframework.context.annotation.Bean;
 
 /**
  * Motan service starter.
- *
- * @author tydhot
  */
 @SpringBootApplication
-@EnableAutoConfiguration
 public class TestMotanApplication {
 
     /**

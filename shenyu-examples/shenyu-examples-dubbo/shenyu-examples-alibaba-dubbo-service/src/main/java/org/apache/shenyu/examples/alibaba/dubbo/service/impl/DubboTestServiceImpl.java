@@ -26,8 +26,6 @@ import org.springframework.stereotype.Service;
 
 /**
  * DubboTestServiceImpl.
- *
- * @author xiaoyu(Myth)
  */
 @Service("dubboTestService")
 public class DubboTestServiceImpl implements DubboTestService {

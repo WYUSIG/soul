@@ -27,9 +27,6 @@ import java.net.UnknownHostException;
 import org.apache.shenyu.client.grpc.common.annotation.ShenyuGrpcClient;
 import org.springframework.stereotype.Service;
 
-/**
- * @author zhanglei
- */
 @Service
 public class EchoServiceImpl extends EchoServiceGrpc.EchoServiceImplBase {
 

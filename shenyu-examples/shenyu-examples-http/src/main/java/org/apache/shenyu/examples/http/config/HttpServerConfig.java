@@ -34,8 +34,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * HttpServerConfig.
- *
- * @author xiaoyu
  */
 @Configuration
 public class HttpServerConfig {

@@ -103,5 +103,4 @@ public class DubboMultiParamServiceImpl implements DubboMultiParamService {
         test.setName("hello world shenyu alibaba dubbo param saveComplexBeanTestAndName :" + complexBeanTest.getDubboTest().getName() + "-" + name);
         return test;
     }
-
 }

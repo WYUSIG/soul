@@ -23,8 +23,6 @@ import org.apache.shenyu.examples.motan.service.MotanDemoService;
 
 /**
  * Motan demo service.
- *
- * @author tydhot
  */
 @MotanService(export = "demoMotan:8002")
 public class MotanDemoServiceImpl implements MotanDemoService {

@@ -15,19 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.shenyu.examples.tars;
+package org.apache.shenyu.examples.springcloud;
 
-import com.qq.tars.spring.annotation.EnableTarsServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
- * SoulTestTarsApplication.
- * @author tydhot
+ * ShenyuTestSpringCloudApplication.
  */
 @SpringBootApplication
-@EnableTarsServer
-public class SoulTestTarsApplication {
+@EnableDiscoveryClient
+public class ShenyuTestSpringCloudApplication {
 
     /**
      * main.
@@ -35,7 +34,6 @@ public class SoulTestTarsApplication {
      * @param args args
      */
     public static void main(final String[] args) {
-        SpringApplication.run(SoulTestTarsApplication.class, args);
+        SpringApplication.run(ShenyuTestSpringCloudApplication.class, args);
     }
-
 }

@@ -27,8 +27,6 @@ import java.util.Random;
 
 /**
  * DubboTestServiceImpl.
- *
- * @author xiaoyu(Myth)
  */
 @Service("dubboTestService")
 public class DubboTestServiceImpl implements DubboTestService {

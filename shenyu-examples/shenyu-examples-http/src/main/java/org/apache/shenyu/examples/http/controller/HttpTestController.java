@@ -30,8 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * TestController.
- *
- * @author xiaoyu
  */
 @RestController
 @RequestMapping("/test")

@@ -26,8 +26,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.io.IOException;
 
 /**
- * SoulTestTarsApplication.
- * @author tydhot
+ * ShenyuTestTarsApplication.
  */
 @SpringBootApplication
 public class ShenyuTestGrpcApplication {
