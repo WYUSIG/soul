@@ -1,25 +1,36 @@
 package org.apache.shenyu.plugin.grpc;
 
+import lombok.SneakyThrows;
 import org.apache.shenyu.common.constant.Constants;
 import org.apache.shenyu.common.dto.MetaData;
 import org.apache.shenyu.common.dto.RuleData;
 import org.apache.shenyu.common.dto.SelectorData;
 import org.apache.shenyu.common.enums.PluginEnum;
 import org.apache.shenyu.common.enums.RpcTypeEnum;
-import org.apache.shenyu.common.exception.ShenyuException;
 import org.apache.shenyu.plugin.api.ShenyuPluginChain;
 import org.apache.shenyu.plugin.api.context.ShenyuContext;
-import org.apache.shenyu.plugin.grpc.cache.ApplicationConfigCache;
-import org.apache.shenyu.plugin.grpc.cache.GrpcClientCache;
+import org.apache.shenyu.plugin.api.result.DefaultShenyuResult;
+import org.apache.shenyu.plugin.api.result.ShenyuResult;
+import org.apache.shenyu.plugin.api.utils.SpringBeanUtils;
+import org.apache.shenyu.plugin.grpc.client.ShenyuGrpcClient;
+import org.apache.shenyu.plugin.grpc.proto.ShenyuGrpcResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -31,66 +42,111 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class GrpcPluginTest {
-
+    @Spy
     private GrpcPlugin grpcPlugin;
-
-    private ServerWebExchange exchange;
 
     @Mock
     private ShenyuPluginChain chain;
-
+    @Mock
     private SelectorData selector;
 
     @Before
     public void setUp() {
-        exchange = MockServerWebExchange.from(MockServerHttpRequest.get("http://localhost/grpc/echo").build());
-        ShenyuContext shenyuContext = mock(ShenyuContext.class);
-        when(shenyuContext.getRpcType()).thenReturn(RpcTypeEnum.GRPC.getName());
-        exchange.getAttributes().put(Constants.CONTEXT, shenyuContext);
-        MetaData metaData = new MetaData();
-        metaData.setId("1332017977771636096");
-        metaData.setAppName("grpc");
-        metaData.setContextPath("/grpc");
-        metaData.setPath("/grpc/echo");
-        metaData.setServiceName("echo.EchoService");
-        metaData.setMethodName("echo");
-        metaData.setRpcType(RpcTypeEnum.GRPC.getName());
-        metaData.setRpcExt("{timeout:5000}");
-        metaData.setEnabled(true);
-        exchange.getAttributes().put(Constants.META_DATA, metaData);
-        exchange.getAttributes().put(Constants.PARAM_TRANSFORM, "{message:1}");
-        grpcPlugin = new GrpcPlugin();
-        selector = mock(SelectorData.class);
+        ConfigurableApplicationContext context = mock(ConfigurableApplicationContext.class);
+        SpringBeanUtils.getInstance().setCfgContext(context);
+        when(context.getBean(ShenyuResult.class)).thenReturn(new DefaultShenyuResult());
+
         when(selector.getName()).thenReturn("/grpc");
-        when(selector.getHandle()).thenReturn("[{\"upstreamUrl\":\"localhost:8080\",\"weight\":50,\"status\":true}]");
-        ApplicationConfigCache.getInstance().initPrx(selector);
-        GrpcClientCache.initGrpcClient(selector.getName());
     }
 
-    /**
-     * expected ShenyuException when examples-grpc is not running
-     */
-    @Test(expected = ShenyuException.class)
-    public void doExecute() {
+    @Test
+    @SneakyThrows
+    public void testDoExecute() {
+        ServerWebExchange exchange = getServerWebExchange();
+        exchange.getAttributes().put(Constants.PARAM_TRANSFORM, "{message:1}");
+        exchange.getAttributes().put(Constants.META_DATA, getMetaData());
+
+        // mock ShenyuGrpcClient.call()
+        Class grpcClientCacheClass = Class.forName("org.apache.shenyu.plugin.grpc.cache.GrpcClientCache");
+        Field clientCacheField = grpcClientCacheClass.getDeclaredField("CLIENT_CACHE");
+        clientCacheField.setAccessible(true);
+        Map<String, ShenyuGrpcClient> clientCacheMap = (Map<String, ShenyuGrpcClient>) clientCacheField.get(grpcClientCacheClass);
+        ShenyuGrpcClient mockClient = mock(ShenyuGrpcClient.class);
+        ShenyuGrpcResponse response = new ShenyuGrpcResponse();
+        response.setResult("success");
+        when(mockClient.call(Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(CompletableFuture.completedFuture(response));
+        clientCacheMap.put("/grpc", mockClient);
+
+        when(chain.execute(Mockito.any())).thenReturn(Mono.empty());
         RuleData data = mock(RuleData.class);
         StepVerifier.create(grpcPlugin.doExecute(exchange, chain, selector, data)).expectSubscription().verifyComplete();
     }
 
     @Test
-    public void getOrder() {
+    @SneakyThrows
+    public void testDoExecuteMetaDataError() {
+        ServerWebExchange exchange = getServerWebExchange();
+        exchange.getAttributes().put(Constants.META_DATA, getMetaData());
+        RuleData data = mock(RuleData.class);
+        StepVerifier.create(grpcPlugin.doExecute(exchange, chain, selector, data)).expectSubscription().verifyComplete();
+    }
+
+    @Test
+    @SneakyThrows
+    public void testDoExecuteParaIsBlankError() {
+        ServerWebExchange exchange = getServerWebExchange();
+        exchange.getAttributes().put(Constants.META_DATA, new MetaData());
+        RuleData data = mock(RuleData.class);
+        StepVerifier.create(grpcPlugin.doExecute(exchange, chain, selector, data)).expectSubscription().verifyComplete();
+    }
+
+    @Test
+    @SneakyThrows
+    public void testDoExecuteClientIsNull() {
+        ServerWebExchange exchange = getServerWebExchange();
+        exchange.getAttributes().put(Constants.PARAM_TRANSFORM, "{message:1}");
+        exchange.getAttributes().put(Constants.META_DATA, getMetaData());
+        RuleData data = mock(RuleData.class);
+        StepVerifier.create(grpcPlugin.doExecute(exchange, chain, selector, data)).expectSubscription().verifyComplete();
+    }
+
+    @Test
+    public void testGetOrder() {
         final int result = grpcPlugin.getOrder();
         assertEquals(PluginEnum.GRPC.getCode(), result);
     }
 
     @Test
-    public void named() {
+    public void testNamed() {
         final String result = grpcPlugin.named();
         assertEquals(PluginEnum.GRPC.getName(), result);
     }
 
     @Test
-    public void skip() {
-        final Boolean result = grpcPlugin.skip(exchange);
+    public void testSkip() {
+        final Boolean result = grpcPlugin.skip(getServerWebExchange());
         assertFalse(result);
+    }
+
+    private MetaData getMetaData() {
+        return MetaData.builder()
+                .id("1332017977771636096")
+                .appName("grpc")
+                .contextPath("/grpc").path("/grpc/echo")
+                .serviceName("echo.EchoService")
+                .methodName("echo")
+                .rpcType(RpcTypeEnum.GRPC.getName())
+                .rpcExt("{timeout:5000}")
+                .parameterTypes("param")
+                .enabled(true).build();
+    }
+
+    private ServerWebExchange getServerWebExchange() {
+        ServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("http://localhost/grpc/echo").build());
+        ShenyuContext shenyuContext = mock(ShenyuContext.class);
+        when(shenyuContext.getRpcType()).thenReturn(RpcTypeEnum.GRPC.getName());
+        exchange.getAttributes().put(Constants.CONTEXT, shenyuContext);
+        return exchange;
     }
 }
