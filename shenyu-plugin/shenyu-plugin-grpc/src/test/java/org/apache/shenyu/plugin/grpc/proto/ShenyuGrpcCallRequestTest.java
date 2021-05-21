@@ -9,7 +9,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -22,13 +21,22 @@ public class ShenyuGrpcCallRequestTest {
 
     @Test
     public void testBuilder() {
+        Channel channel = mock(Channel.class);
+        CallOptions callOptions = mock(CallOptions.class);
+        DynamicMessage dynamicMessage = mock(DynamicMessage.class);
+        Descriptors.MethodDescriptor methodDescriptor = mock(Descriptors.MethodDescriptor.class);
+        StreamObserver<DynamicMessage> streamObserver = mock(StreamObserver.class);
         shenyuGrpcCallRequest = ShenyuGrpcCallRequest.builder()
-                .channel(mock(Channel.class))
-                .callOptions(mock(CallOptions.class))
-                .requests(mock(DynamicMessage.class))
-                .methodDescriptor(mock(Descriptors.MethodDescriptor.class))
-                .responseObserver(mock(StreamObserver.class))
+                .channel(channel)
+                .callOptions(callOptions)
+                .requests(dynamicMessage)
+                .methodDescriptor(methodDescriptor)
+                .responseObserver(streamObserver)
                 .build();
-        assertNotNull(shenyuGrpcCallRequest);
+        assert shenyuGrpcCallRequest.getChannel().equals(channel) &&
+                shenyuGrpcCallRequest.getCallOptions().equals(callOptions) &&
+                shenyuGrpcCallRequest.getRequests().equals(dynamicMessage) &&
+                shenyuGrpcCallRequest.getMethodDescriptor().equals(methodDescriptor) &&
+                shenyuGrpcCallRequest.getResponseObserver().equals(streamObserver);
     }
 }

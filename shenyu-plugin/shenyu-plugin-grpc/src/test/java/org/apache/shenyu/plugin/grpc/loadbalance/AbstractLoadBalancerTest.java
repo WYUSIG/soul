@@ -8,7 +8,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 /**
  * The Test Case For {@link AbstractLoadBalancer}.
  */
-@RunWith(MockitoJUnitRunner.class)
+//@RunWith(MockitoJUnitRunner.class)
 public class AbstractLoadBalancerTest {
 
     private AbstractLoadBalancer abstractLoadBalancer;
