@@ -93,6 +93,8 @@ public class HttpSyncDataServiceTest {
         this.authDataSubscriber = mock(AuthDataSubscriber.class);
         this.httpSyncDataService = new HttpSyncDataService(httpConfig, pluginDataSubscriber,
                 Collections.singletonList(metaDataSubscriber), Collections.singletonList(authDataSubscriber));
+        this.httpSyncDataService = new HttpSyncDataService(httpConfig, pluginDataSubscriber,
+                Collections.singletonList(metaDataSubscriber), Collections.singletonList(authDataSubscriber));
     }
 
     @After
