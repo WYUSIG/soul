@@ -27,9 +27,9 @@ spring:
     prefix: classpath:/static/
     suffix: .html
   datasource:
-    url: jdbc:mysql://localhost:3306/shenyu?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    url: jdbc:mysql://localhost:6657/shenyu?useUnicode=true&characterEncoding=utf-8&useSSL=false
     username: root
-    password:
+    password: kIo9u7Oi0eg
     driver-class-name: com.mysql.jdbc.Driver
 
 mybatis:
@@ -52,19 +52,19 @@ shenyu:
     init_script: "META-INF/schema.sql"
     init_enable: true
   sync:
-    websocket:
-      enabled: true
+#    websocket:
+#      enabled: true
 #      zookeeper:
 #          url: localhost:2181
 #          sessionTimeout: 5000
 #          connectionTimeout: 2000
 #      http:
 #        enabled: true
-  #    nacos:
-  #      url: localhost:8848
-  #      namespace: 1c10d748-af86-43b9-8265-75f487d20c6c
-  #      username:
-  #      password:
+      nacos:
+        url: localhost:8848
+        namespace: 1c10d748-af86-43b9-8265-75f487d20c6c
+        username:
+        password:
   #      acm:
   #        enabled: false
   #        endpoint: acm.aliyun.com
